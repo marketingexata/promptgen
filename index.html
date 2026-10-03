@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<!--
+=====================================================================
+ PROMPT GENERATOR DESAIN - satu file HTML, siap copy-paste
+ Cara pakai: simpan sebagai .html lalu buka di browser (HP / desktop)
+ Bagian yang mudah diedit (cari komentar "EDIT"):
+   1. WARNA & TEMA ........ CSS bagian ":root"
+   2. TEMPLATE PROMPT ..... JS variabel HEAD dan TAIL
+   3. PILIHAN DROPDOWN .... JS variabel CD (per kategori) dan SH (umum)
+   4. NAMA KATEGORI ....... HTML elemen select id="CAT"
+   5. DAFTAR PARAMETER .... JS variabel KEYS dan blok HTML "Parameter"
+=====================================================================
+-->
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PromptGen</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+/* EDIT 1: warna tema. --a dan --b adalah warna aksen; blok media di bawahnya = tema terang */
+:root{--bg1:#0b1026;--bg2:#1b1147;--txt:#eef1ff;--mut:#a9b0d6;--glass:rgba(255,255,255,.08);--line:rgba(255,255,255,.18);--a:#ff7a6b;--b:#5eead4;--fld:rgba(8,12,34,.45);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg1:#e8ecff;--bg2:#f7e9ff;--txt:#161a3a;--mut:#555c86;--glass:rgba(255,255,255,.55);--line:rgba(60,70,140,.2);--fld:rgba(255,255,255,.7)}}
+:root[data-theme="light"]{--bg1:#e8ecff;--bg2:#f7e9ff;--txt:#161a3a;--mut:#555c86;--glass:rgba(255,255,255,.55);--line:rgba(60,70,140,.2);--fld:rgba(255,255,255,.7)}
+*,*:before,*:after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;font-family:'Sora',system-ui,sans-serif;color:var(--txt);background:linear-gradient(135deg,var(--bg1),var(--bg2));background-attachment:fixed;overflow-x:hidden}
+/* LATAR: gumpalan warna blur yang bergerak pelan */
+.blob{position:fixed;border-radius:50%;filter:blur(80px);opacity:.55;z-index:0;pointer-events:none;animation:drift 18s ease-in-out infinite alternate}
+.b1{width:420px;height:420px;background:var(--a);top:-120px;left:-100px}
+.b2{width:460px;height:460px;background:var(--b);bottom:-160px;right:-120px;animation-delay:-9s}
+@keyframes drift{to{transform:translate(60px,40px) scale(1.15)}}
+@media (prefers-reduced-motion:reduce){.blob{animation:none}}
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:20px 16px 40px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+h1{font-size:clamp(1.4rem,4vw,2.2rem);font-weight:800;margin:0;letter-spacing:-.02em}
+header p{margin:4px 0 0;color:var(--mut);font-size:.9rem}
+/* LAYOUT: 1 kolom di HP, 2 kolom di layar >= 900px */
+.grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:900px){.grid{grid-template-columns:1.05fr 1fr;align-items:start}.out{position:sticky;top:16px}}
+/* GAYA KACA (glassmorphism): transparan + blur */
+.card{background:var(--glass);border:1px solid var(--line);border-radius:22px;padding:18px;backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);box-shadow:0 10px 40px rgba(0,0,0,.25)}
+h2{font-size:1rem;margin:0 0 12px;font-weight:600}
+.f{display:grid;grid-template-columns:1fr;gap:12px}
+@media (min-width:600px){.f{grid-template-columns:1fr 1fr}.full{grid-column:1/-1}}
+label{display:block;font-size:.78rem;font-weight:600;margin-bottom:5px;color:var(--mut)}
+input,select,textarea{width:100%;font:inherit;font-size:.92rem;color:var(--txt);background:var(--fld);border:1px solid var(--line);border-radius:12px;padding:10px 12px;outline:none;transition:border-color .2s,box-shadow .2s}
+select option{color:#111}
+input:focus,select:focus,textarea:focus,button:focus-visible{border-color:var(--b);box-shadow:0 0 0 3px rgba(94,234,212,.3)}
+textarea{resize:vertical;min-height:70px}
+.act{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+button{font:inherit;font-size:.88rem;font-weight:600;border:1px solid var(--line);background:var(--glass);color:var(--txt);border-radius:12px;padding:10px 16px;cursor:pointer;transition:transform .15s}
+button:active{transform:scale(.97)}
+.pri{background:linear-gradient(135deg,var(--a),#ff4d8d);border:0;color:#fff;flex:1 1 160px;font-size:.95rem;padding:12px 18px}
+#out{min-height:360px;height:58vh;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;line-height:1.5}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.cnt{font-size:.75rem;color:var(--mut)}
+.pre{display:flex;gap:8px;margin-bottom:10px}
+.pre input{flex:1}
+#list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 12px;font-size:.8rem;background:var(--fld)}
+.chip button{padding:2px 8px;border-radius:999px;font-size:.75rem}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--txt);color:var(--bg1);padding:10px 18px;border-radius:999px;font-size:.85rem;font-weight:600;opacity:0;transition:.3s;z-index:9}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.empty{color:var(--mut);font-size:.8rem}
+.dd{margin-bottom:6px}.cat{margin:4px 0 14px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--fld)}
+.cat label{color:var(--txt)}
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div>
+<div class="wrap">
+<header>
+<div><h1>PromptGen</h1><p>Bantu teman teman EXATA group bikin gambar dari AI.</p></div>
+<button id="theme" aria-label="Ganti tema">Tema</button>
+</header>
+<div class="grid">
+<section class="card">
+<div class="pre"><input id="pn" placeholder="Nama preset, mis. Promo Nenkin"><button id="ps">Simpan preset</button></div>
+<div class="empty" id="pe">Belum ada preset tersimpan.</div>
+<div id="list"></div>
+<!-- EDIT 4: nama kategori konten (value n/s/r/o/g harus sama dengan kunci di CD) -->
+<div class="cat"><label for="CAT">KATEGORI DIVISI</label><select id="CAT"><option value="n">EXATA Indonesia - Nenkin &amp; Gensen</option><option value="s">JP SMART - Kartu SIM Jepang</option><option value="r">J-Expert - Rekrutmen Eks Pemagang</option><option value="t">JLCT - Tes Bahasa Jepang &amp; Sertifikasi</option><option value="o">Yanoshi - Oleh-oleh Khas Jepang</option><option value="g">Custom (isi sendiri)</option></select>
+<input id="CATN" placeholder="Tulis nama kategori / topik sendiri" style="display:none;margin-top:8px"></div>
+<h2 style="margin-top:18px">Di isi dulu ya kolom kolom dibawah</h2>
+<!-- EDIT 5: kolom parameter. id kolom harus sama dengan isi variabel KEYS -->
+<div class="f">
+<div><label for="DESAIN">Mau bikin gambar tentang apa?</label><input id="DESAIN" placeholder="Promo layanan"></div>
+<div><label for="FORMAT">Buat di tampilin dimana?</label><select id="FORMAT"><option>Story</option><option>Feed</option><option>Feed Square</option><option>Poster</option><option>Brosur</option><option>Banner</option><option>Banner Vertical</option><option>Bendera</option><option>Custom</option></select></div>
+<div class="full"><label for="JUDUL">Judul utamanya?</label><input id="JUDUL" placeholder="Urus Nenkin Lebih Mudah"></div>
+<div class="full"><label for="ISI">Isian tulisannya mau ada tulisan tentang apa?</label><textarea id="ISI" placeholder="Proses cepat, transparan, dan terpercaya"></textarea></div>
+<div><label for="VISUAL">Gambar utama (gede)nya kira kira mau apa?</label><input id="VISUAL" placeholder="Pekerja Indonesia di Jepang"></div>
+<div><label for="ORNAMEN">Mau dikasih ornamen atau yang lainnya juga?</label><input id="ORNAMEN" placeholder="Sakura dan elemen Jepang modern"></div>
+<div><label for="WARNA">Di gambarnya, mau dominan warna apa?</label><input id="WARNA" placeholder="Biru navy + merah"></div>
+<div><label for="STYLE">Gaya desainnya kaya apa?</label><input id="STYLE" placeholder="Modern clean corporate"></div>
+<div><label for="KONTAK">Pakai kontak person apa aja? (gak wajib)</label><input id="KONTAK" placeholder="081234567890"></div>
+<div><label for="QR">ada QR juga? (gak wajib)</label><input id="QR" placeholder="Gunakan QR terlampir"></div>
+<div><label for="CTA">CTAnya mau gimana? (gak wajib)</label><input id="CTA" placeholder="Hubungi Sekarang"></div>
+<div><label for="CATATAN">Catatan tambahan biar hasilnya lebih sesuai (gak wajib)</label><input id="CATATAN" placeholder="Catatan tambahan"></div>
+<div class="full"><label for="GAMBAR">Ada gambar lampiran? (kalau gak ada gapapa)</label><textarea id="GAMBAR" placeholder="Mis. Gambar 1 = reference style, gambar 2 = foto asset, gambar 3 = logo, gambar 4 = QR"></textarea></div>
+</div>
+<div class="act"><button class="pri" id="gen">Generate prompt</button><button id="ex">Isi Random</button><button id="rs">Reset Halaman</button></div>
+</section>
+<section class="card out">
+<div class="bar"><h2 style="margin:0">Prompt lengkap</h2><span class="cnt" id="cnt">0 karakter</span></div>
+<textarea id="out" placeholder="Hasil prompt muncul di sini. Kamu bisa mengeditnya langsung."></textarea>
+<div class="act"><button class="pri" id="cp">Salin prompt</button><button id="cl">Kosongkan</button></div>
+</section>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+// EDIT 5: daftar parameter (urutan = urutan tampil di blok INPUT USER)
+var KEYS=["DESAIN","FORMAT","JUDUL","ISI","VISUAL","ORNAMEN","WARNA","STYLE","KONTAK","QR","CTA","CATATAN","GAMBAR"];
+// EDIT 2: template prompt bagian atas (sebelum INPUT USER)
+var HEAD=`# ROLE
+
+Kamu adalah **Senior Art Director + Graphic Designer + AI Image Prompt Architect**.
+
+Tugasmu adalah mengubah brief singkat pengguna menjadi desain visual final yang profesional, rapi, modern, mudah dibaca, dan siap digunakan.
+
+---
+
+`;
+// EDIT 2: template prompt bagian bawah (setelah INPUT USER)
+var TAIL=`
+
+---
+
+# AUTO DETECTION GAMBAR
+
+Periksa seluruh gambar yang dilampirkan pengguna.
+
+Secara otomatis klasifikasikan menjadi:
+
+- **REFERENCE** = contoh style, layout, mood, warna, atau komposisi
+- **ASSET** = foto manusia, produk, objek, tempat, ilustrasi, atau elemen yang harus digunakan
+- **LOGO** = logo brand
+- **QR** = QR Code
+- **OTHER** = elemen pendukung lain
+
+Jika gambar berupa poster/desain jadi, anggap sebagai REFERENCE.
+
+Jika gambar berupa foto objek/manusia/produk tanpa layout desain, anggap sebagai ASSET.
+
+Jika ditemukan QR Code, gunakan sebagai QR asli.
+
+Jika ditemukan logo, gunakan sebagai logo asli.
+
+Jika pengguna tidak memberikan gambar apa pun, buat seluruh visual dari brief teks.
+
+---
+
+# FORMAT OTOMATIS
+
+Jika FORMAT:
+
+Story:
+1080 × 1920 px
+9:16
+
+Feed:
+1080 × 1350 px
+4:5
+
+Feed Square:
+1080 × 1080 px
+1:1
+
+Poster:
+rasio 210:297
+
+Brosur:
+rasio 210:297
+
+Banner:
+3:1
+
+Banner Vertical:
+1:3
+
+Bendera:
+3:2
+
+Custom:
+ikuti ukuran pengguna.
+
+Layout harus dibuat ulang sesuai format.
+
+Jangan hanya melakukan crop dari format lain.
+
+---
+
+# HIERARKI DESAIN
+
+Prioritas visual:
+
+1. JUDUL
+2. VISUAL UTAMA
+3. ISI PRIORITAS
+4. CTA
+5. KONTAK / QR
+6. INFORMASI TAMBAHAN
+7. ORNAMEN
+
+Pastikan headline dapat terbaca dalam beberapa detik.
+
+Visual utama harus menjadi focal point.
+
+Informasi penting tidak boleh kalah oleh dekorasi.
+
+---
+
+# LOGIKA VISUAL
+
+Jika pengguna melampirkan ASSET yang sesuai dengan VISUAL:
+gunakan asset tersebut.
+
+Jika tidak:
+buat visual sesuai deskripsi VISUAL.
+
+Jika VISUAL kosong:
+tentukan visual paling relevan berdasarkan JUDUL, ISI, dan jenis desain.
+
+Jangan menutupi wajah dengan teks.
+
+Jangan crop wajah secara buruk.
+
+Pastikan anatomi manusia natural.
+
+Jika berupa produk:
+produk harus terlihat jelas dan menjadi pusat perhatian.
+
+---
+
+# LOGIKA REFERENCE
+
+Jika terdapat gambar REFERENCE:
+
+pelajari:
+- komposisi
+- hierarki
+- warna
+- typography
+- lighting
+- framing
+- spacing
+- ornamen
+- mood
+
+Gunakan sebagai inspirasi visual.
+
+Jangan menyalin secara identik.
+
+Adaptasikan dengan brief pengguna.
+
+---
+
+# LOGIKA WARNA
+
+Jika WARNA berisi 2 warna:
+
+warna pertama = warna utama
+warna kedua = warna sekunder
+
+Contoh:
+
+WARNA = biru navy + merah
+
+maka:
+- navy dominan
+- merah sebagai highlight/aksen
+
+Jika hanya satu warna:
+buat otomatis:
+- shade gelap
+- shade terang
+- warna netral
+- warna aksen yang harmonis
+
+Jika WARNA kosong:
+tentukan palette profesional berdasarkan topik dan style.
+
+---
+
+# LOGIKA STYLE
+
+Jika STYLE tersedia:
+ikuti style tersebut.
+
+Contoh:
+
+Modern clean  
+Corporate  
+Luxury  
+Premium  
+Japanese modern  
+Minimal  
+Futuristic  
+Energetic  
+Elegant  
+Friendly  
+Youthful  
+Editorial  
+
+Jika STYLE kosong:
+
+gunakan default:
+
+**modern clean professional**
+
+---
+
+# TYPOGRAPHY
+
+Gunakan typography yang sesuai dengan style.
+
+Gunakan maksimal sekitar 2 keluarga font secara visual.
+
+Buat perbedaan jelas antara:
+
+- headline
+- subheadline
+- isi
+- CTA
+- kontak
+
+Jangan membuat semua teks memiliki ukuran yang sama.
+
+Headline harus dominan.
+
+Tuliskan informasi penting dengan akurat.
+
+Jangan mengubah:
+- nama
+- harga
+- tanggal
+- nomor
+- username
+- alamat
+- data penting
+
+---
+
+# AUTO CONTACT SYSTEM
+
+Periksa KONTAK.
+
+Jika berupa angka telepon seperti:
+
+08123456789
+
+atau:
+
++628123456789
+
+maka tampilkan:
+
+[WhatsApp Icon] nomor
+
+Gunakan logo WhatsApp.
+
+Jangan mengubah nomor.
+
+---
+
+Jika KONTAK berupa:
+
+@username
+
+maka gunakan:
+
+[Instagram Icon] @username
+
+---
+
+Jika terdapat kata:
+
+Instagram
+IG
+
+gunakan icon Instagram.
+
+---
+
+Jika terdapat kata:
+
+Facebook
+FB
+
+gunakan icon Facebook.
+
+---
+
+Jika KONTAK kosong:
+
+jangan tampilkan:
+- nomor
+- username
+- icon WhatsApp
+- Instagram
+- Facebook
+- placeholder kontak
+
+---
+
+# AUTO QR SYSTEM
+
+Jika terdapat gambar QR:
+
+gunakan gambar tersebut.
+
+Jangan generate ulang QR.
+
+Jangan mengubah pola QR.
+
+Jangan:
+- blur
+- distort
+- crop
+- rotate ekstrem
+- memberi efek perspektif
+- menutup bagian QR
+
+Letakkan QR pada area bersih dengan kontras tinggi.
+
+Sisakan quiet zone.
+
+Jika relevan, tambahkan teks seperti:
+
+Scan QR
+
+atau
+
+Scan untuk informasi lengkap
+
+Jika tidak ada QR:
+jangan membuat QR palsu.
+
+---
+
+# LOGO SYSTEM
+
+Jika logo dilampirkan:
+
+gunakan logo asli.
+
+Jangan:
+- mengganti teks logo
+- mengubah simbol
+- mengubah bentuk
+- mendesain ulang
+
+Tempatkan secara proporsional.
+
+Jika tidak ada logo:
+jangan membuat logo baru kecuali diminta.
+
+---
+
+# ORNAMEN
+
+Jika ORNAMEN tersedia:
+gunakan sesuai brief.
+
+Jika kosong:
+tambahkan ornamen minimal bila diperlukan.
+
+Contoh:
+
+- geometric shape
+- gradient
+- abstract shape
+- line
+- icon
+- pattern
+- glow
+- texture
+- cultural element
+
+Ornamen harus mendukung desain.
+
+Jangan membuat desain terlalu ramai.
+
+---
+
+# AUTO CTA
+
+Jika CTA tersedia:
+buat CTA terlihat jelas.
+
+Contoh:
+
+Daftar Sekarang  
+Hubungi Sekarang  
+Scan QR  
+Pelajari Selengkapnya  
+
+Jika CTA kosong:
+jangan membuat CTA yang mengubah maksud desain.
+
+---
+
+# RESPONSIVE LAYOUT
+
+Sesuaikan karakter desain berdasarkan FORMAT.
+
+STORY:
+- vertikal
+- visual dominan
+- headline besar
+- CTA jelas
+
+FEED:
+- kuat sebagai thumbnail
+- focal point jelas
+- teks mudah dibaca di layar kecil
+
+POSTER:
+- headline besar
+- hierarki kuat
+- mudah dibaca dari jarak tertentu
+
+BROSUR:
+- informasi lebih detail
+- gunakan grid
+- kelompokkan konten
+
+BANNER:
+- teks besar
+- informasi singkat
+- cocok dibaca dari jauh
+
+BENDERA:
+- sangat sederhana
+- high contrast
+- minim teks
+- fokus logo, simbol, atau headline
+
+---
+
+# SMART DEFAULT SYSTEM
+
+Jika parameter kosong:
+
+VISUAL kosong:
+pilih visual paling relevan.
+
+ORNAMEN kosong:
+gunakan ornamen minimal.
+
+STYLE kosong:
+modern clean professional.
+
+WARNA kosong:
+pilih warna profesional sesuai konteks.
+
+KONTAK kosong:
+hilangkan area kontak.
+
+QR kosong:
+hilangkan area QR.
+
+CTA kosong:
+tidak perlu membuat CTA.
+
+Jangan meminta klarifikasi jika brief sudah cukup untuk menghasilkan desain yang masuk akal.
+
+Gunakan keputusan desain profesional.
+
+---
+
+# ATURAN KETAT
+
+Jangan mengarang:
+
+- nomor telepon
+- harga
+- tanggal
+- nama orang
+- alamat
+- username
+- QR
+- diskon
+- promo
+- statistik
+- klaim
+- nama perusahaan
+
+Jangan gunakan lorem ipsum.
+
+Jangan menambahkan watermark.
+
+Jangan membuat mockup HP, billboard, brosur cetak, kaos, papan iklan, atau device frame kecuali diminta.
+
+Hasil harus berupa artwork desain secara langsung.
+
+---
+
+# INTERNAL DESIGN PROCESS
+
+Sebelum menghasilkan gambar, lakukan secara internal:
+
+analisis brief  
+→ identifikasi gambar  
+→ tentukan format  
+→ tentukan hierarchy  
+→ tentukan grid  
+→ tentukan focal point  
+→ tentukan warna  
+→ tentukan typography  
+→ tentukan posisi visual  
+→ tentukan CTA  
+→ tentukan kontak  
+→ tentukan QR  
+→ cek readability  
+→ generate final design
+
+Jangan tampilkan proses internal ini.
+
+---
+
+# OUTPUT TARGET
+
+Buat hasil yang terasa seperti karya desainer profesional.
+
+Target kualitas:
+
+- professional
+- polished
+- clean
+- balanced
+- commercial-ready
+- readable
+- high visual hierarchy
+- tidak terlihat seperti template generik
+- tidak terlihat seperti elemen yang ditempel sembarangan
+
+Urutan perhatian pengguna harus:
+
+JUDUL  
+→ VISUAL UTAMA  
+→ ISI PRIORITAS  
+→ CTA  
+→ KONTAK / QR
+
+Setelah memahami semua parameter dan gambar yang tersedia, langsung hasilkan desain final.`;
+// Isi tombol 'Isi contoh'
+var EX={DESAIN:"Promo layanan",FORMAT:"Story",JUDUL:"Urus Nenkin Lebih Mudah",ISI:"Proses cepat, transparan, dan terpercaya",VISUAL:"Pekerja Indonesia di Jepang",ORNAMEN:"Sakura dan elemen Jepang modern",WARNA:"Biru navy + merah",STYLE:"Modern clean corporate",KONTAK:"081234567890",QR:"Gunakan QR terlampir",CTA:"Hubungi Sekarang",CATATAN:"",GAMBAR:""};
+var $=function(i){return document.getElementById(i)};
+function val(k){return $(k).value.trim()}
+function toast(m){var t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(function(){t.classList.remove("on")},1800)}
+function count(){$("cnt").textContent=$("out").value.length.toLocaleString("id-ID")+" karakter"}
+// Menempelkan semua parameter ke template lalu menghasilkan prompt
+function build(){
+ var s="# INPUT USER\n\n";
+ if($("CAT").value==="g"&&$("CATN").value.trim())s+="TOPIK KONTEN = "+$("CATN").value.trim()+"\n";
+ KEYS.slice(0,12).forEach(function(k){s+=k+" = "+(val(k)||"(kosong)")+"\n"});
+ if(val("GAMBAR"))s+="\n# CATATAN GAMBAR LAMPIRAN\n\n"+val("GAMBAR")+"\n";
+ return HEAD+s.trim()+TAIL;
+}
+$("gen").onclick=function(){$("out").value=build();count();toast("Prompt berhasil dibuat");if(innerWidth<900)$("out").scrollIntoView({behavior:"smooth"})};
+$("out").oninput=count;
+$("cp").onclick=function(){var o=$("out");if(!o.value){toast("Generate prompt dulu");return}
+ var done=function(){toast("Prompt disalin")};
+ try{navigator.clipboard.writeText(o.value).then(done,function(){o.select();document.execCommand("copy");done()})}catch(e){o.select();document.execCommand("copy");done()}};
+$("cl").onclick=function(){$("out").value="";count()};
+function fill(d){KEYS.forEach(function(k){$(k).value=d[k]||(k==="FORMAT"?"Story":"")})}
+$("ex").onclick=function(){fill(EX);toast("Contoh diisi")};
+$("rs").onclick=function(){fill({});$("out").value="";count();toast("Parameter direset")};
+// Preset: disimpan di localStorage browser (per perangkat)
+var P={};
+function load(){try{P=JSON.parse(localStorage.getItem("pg_presets")||"{}")}catch(e){P={}}}
+function save(){try{localStorage.setItem("pg_presets",JSON.stringify(P))}catch(e){toast("Penyimpanan tidak tersedia")}}
+function render(){var l=$("list");l.innerHTML="";var n=Object.keys(P);$("pe").style.display=n.length?"none":"block";
+ n.forEach(function(name){var c=document.createElement("span");c.className="chip";c.appendChild(document.createTextNode(name));
+  var a=document.createElement("button");a.textContent="Muat";a.onclick=function(){fill(P[name]);toast("Preset dimuat")};
+  var b=document.createElement("button");b.textContent="Hapus";b.onclick=function(){delete P[name];save();render()};
+  c.appendChild(a);c.appendChild(b);l.appendChild(c)})}
+$("ps").onclick=function(){var n=$("pn").value.trim();if(!n){toast("Isi nama preset dulu");return}
+ var d={};KEYS.forEach(function(k){d[k]=$(k).value});P[n]=d;save();render();$("pn").value="";toast("Preset disimpan")};
+$("theme").onclick=function(){var r=document.documentElement,dark=getComputedStyle(r).getPropertyValue("--bg1").trim()==="#0b1026";r.setAttribute("data-theme",dark?"light":"dark")};
+// EDIT 3: 10 pilihan per kolom untuk tiap kategori (n,s,r,t,o,g). Pisahkan dengan tanda |
+// Awalan: ∅ = kosongkan kolom, ✎ = kosongkan lalu tampilkan petunjuk ketik
+var CD={
+DESAIN:{
+n:"Edukasi Nenkin|Edukasi Gensen|Info Kenshusei|Tips Hidup di Jepang|Info Jepang Terkini|Campaign Sadar Nenkin|Infografis Tahapan|Tanya Jawab (FAQ)|Pengingat Penting|Brosur Panduan Lengkap",
+s:"Info Kartu SIM Jepang|Edukasi Cara Pakai|Campaign Kartu SIM|Perbandingan Paket|Panduan Aktivasi|Tips Internet di Jepang|Info Kenshusei|Info Jepang Terkini|FAQ Kartu SIM|Brosur Layanan SIM",
+r:"Info Rekrutmen|Campaign Lowongan|Edukasi Karier|Kisah Eks Pemagang|Info Kenshusei|Info Jepang Terkini|Poster Lowongan|Brosur Perusahaan|Syarat dan Alur Seleksi|Ajakan Bergabung",
+t:"Info Tes Bahasa Jepang|Edukasi Sertifikasi|Campaign Pendaftaran Tes|Tips Lulus Tes|Info Kenshusei|Info Jepang Terkini|Jadwal dan Alur Tes|Poster Pendaftaran|Brosur Lembaga|FAQ Tes"},
+JUDUL:{
+n:"Apa Itu Nenkin?|Apa Itu Gensen?|Urus Nenkin Lebih Mudah|Mengenal Gensen Choshu Hyo|Hak Pemagang Jepang yang Perlu Kamu Tahu|Jangan Lewatkan Urusan Nenkin|Pahami Gensen Sebelum Pulang|Panduan Hidup Pemagang di Jepang|Mengenal Program Kenshusei|Kabar Terkini dari Jepang",
+s:"Kartu SIM Jepang untuk Pemagang|Siap Online Setelah Tiba di Jepang|Pilih Kartu SIM yang Tepat|Cara Aktivasi Kartu SIM Jepang|Tetap Terhubung dengan Keluarga|Internet Lancar, Hidup Tenang|Jangan Bingung Cari SIM di Jepang|Persiapan Pemagang Sebelum Berangkat|Mengenal Program Kenshusei|Kabar Terkini dari Jepang",
+r:"Eks Pemagang Jepang, Saatnya Berkarier di Indonesia|Pengalamanmu Berharga|Dibutuhkan Eks Pemagang Jepang|Etos Kerja Jepang untuk Indonesia|Lanjutkan Kariermu Setelah Pulang|Kami Mencari Talenta Eks Pemagang|Dari Jepang untuk Indonesia|Pulang dengan Bekal, Berkarier dengan Bangga|Info Lowongan Terbaru|Kabar Terkini dari Jepang",
+t:"Siap Tes Bahasa Jepang?|Kenali JLPT, JFT-Basic, dan Tes Lainnya|Sertifikat Bahasa untuk Kariermu|Persiapan Tes Lebih Terarah|Daftar Tes Bahasa Jepang di Sini|Tips Lulus Tes Bahasa Jepang|Bahasa Jepang Membuka Peluang|Pahami Alur Pendaftaran Tes|Dari Belajar Hingga Bersertifikat|Kabar Terkini dari Jepang"},
+ISI:{
+n:"Penjelasan singkat dan mudah dipahami|Proses cepat, transparan, dan terpercaya|Langkah-langkah yang perlu disiapkan|Dokumen yang perlu dipersiapkan|Pertanyaan yang sering muncul|Kesalahan umum yang perlu dihindari|Hak dan kewajiban pemagang|Ringkasan poin penting|Informasi untuk keluarga di Indonesia|Update informasi terbaru seputar Jepang",
+s:"Aktivasi mudah langkah demi langkah|Proses cepat, transparan, dan terpercaya|Cara memilih paket sesuai kebutuhan|Dokumen yang perlu disiapkan|Tips menjaga kuota|Cara menghubungi keluarga di Indonesia|Pertanyaan yang sering muncul|Hal yang perlu dicek sebelum berangkat|Ringkasan keunggulan layanan|Info terbaru seputar Jepang",
+r:"Syarat dan alur seleksi yang jelas|Proses cepat, transparan, dan terpercaya|Keterampilan dan etos kerja yang dicari|Daftar posisi yang tersedia|Cara mendaftar langkah demi langkah|Dokumen yang perlu disiapkan|Manfaat pengalaman di Jepang|Pertanyaan yang sering muncul|Kisah singkat eks pemagang|Info terbaru seputar Jepang",
+t:"Alur pendaftaran langkah demi langkah|Proses cepat, transparan, dan terpercaya|Perbedaan jenis tes dan fungsinya|Dokumen yang perlu disiapkan|Tips belajar dan latihan soal|Hal yang perlu dibawa saat tes|Pertanyaan yang sering muncul|Manfaat sertifikat untuk karier|Ringkasan poin penting|Info terbaru seputar Jepang"},
+VISUAL:{
+n:"Pekerja Indonesia di Jepang|Pemagang dengan seragam kerja|Dokumen dan paspor|Ilustrasi uang dan kalkulator|Pekerja membaca dokumen bersama|Gedung kantor pemerintahan Jepang|Stasiun kereta Jepang|Gunung Fuji dan kota Jepang|Ikon checklist dan dokumen|Karakter ilustrasi pemagang",
+s:"Kartu SIM dan smartphone|Pemagang video call dengan keluarga|Pekerja Indonesia di Jepang memegang HP|Ikon sinyal dan jaringan|Bandara Jepang|Peta Jepang dengan titik sinyal|Tangan memasang kartu SIM|Pemagang di stasiun kereta|Ilustrasi paket kartu SIM|Karakter ilustrasi pemagang",
+r:"Eks pemagang Jepang berseragam kerja|Tim profesional tersenyum|Jabat tangan kerja sama|Pekerja di pabrik modern|Pekerja di kantor Indonesia|Pesawat pulang ke Indonesia|Sertifikat dan dokumen lamaran|Ikon CV dan checklist|Peta Jepang ke Indonesia|Karakter ilustrasi pekerja",
+t:"Peserta tes mengisi lembar jawaban|Pelajar belajar huruf Jepang|Sertifikat bahasa Jepang|Ruang kelas modern|Buku dan alat tulis|Pemagang belajar dengan laptop|Huruf hiragana dan kanji besar|Ikon checklist ujian|Pemagang memegang sertifikat|Karakter ilustrasi pelajar"},
+ORNAMEN:{
+n:"Sakura dan elemen Jepang modern|Pola seigaiha|Lingkaran matahari Jepang|Garis geometris|Ikon dokumen dan koin|Awan gaya Jepang|Daun maple|Gunung Fuji minimalis|Gradasi halus dan glow|Minimal, tanpa ornamen berlebih",
+s:"Sakura dan elemen Jepang modern|Gelombang sinyal|Garis jaringan titik|Ikon wifi dan sinyal|Pola digital geometris|Awan gaya Jepang|Gradasi neon halus|Lingkaran matahari Jepang|Pola seigaiha|Minimal, tanpa ornamen berlebih",
+r:"Sakura dan elemen Jepang modern|Garis penghubung Jepang dan Indonesia|Pola batik modern|Perpaduan sakura dan batik|Bentuk geometris korporat|Lingkaran matahari Jepang|Ikon CV dan briefcase|Gradasi halus|Pola seigaiha|Minimal, tanpa ornamen berlebih",
+t:"Sakura dan elemen Jepang modern|Huruf kanji dekoratif|Tipografi hiragana|Pola seigaiha|Garis dan titik geometris|Ikon buku dan pensil|Lingkaran matahari Jepang|Gradasi halus|Daun maple|Minimal, tanpa ornamen berlebih"},
+CTA:{
+n:"Hubungi Sekarang|Pelajari Selengkapnya|Konsultasi Sekarang|Scan QR|Simpan Postingan Ini|Bagikan ke Teman|Tanya via WhatsApp|Cek Info Lengkap|Ikuti untuk Info Lainnya|∅ Tanpa CTA",
+s:"Pesan Sekarang|Hubungi Sekarang|Tanya via WhatsApp|Scan QR|Pelajari Selengkapnya|Konsultasi Sekarang|Cek Paket Tersedia|Simpan Postingan Ini|Bagikan ke Teman|∅ Tanpa CTA",
+r:"Daftar Sekarang|Kirim Lamaran|Hubungi Sekarang|Tanya via WhatsApp|Scan QR|Pelajari Selengkapnya|Cek Posisi Tersedia|Bagikan ke Teman|Simpan Postingan Ini|∅ Tanpa CTA",
+t:"Daftar Tes Sekarang|Hubungi Sekarang|Tanya via WhatsApp|Scan QR|Pelajari Selengkapnya|Cek Jadwal Tes|Simpan Postingan Ini|Bagikan ke Teman|Konsultasi Sekarang|∅ Tanpa CTA"}
+};
+// EDIT 3: pilihan umum yang sama di semua kategori
+var SH={
+WARNA:"Biru navy + merah|Merah + putih|Biru langit + putih|Hijau tua + emas|Ungu tua + oranye|Hitam + emas|Teal + kuning|Biru navy + emas|Merah maroon + krem|Pink sakura + abu gelap",
+STYLE:"Modern clean corporate|Modern clean professional|Japanese modern|Minimal|Elegant|Friendly|Youthful|Editorial|Energetic|Premium",
+KONTAK:"✎ WhatsApp: ketik nomor sendiri|✎ Instagram: ketik @username sendiri|✎ Facebook: ketik nama halaman|✎ WhatsApp + Instagram: ketik keduanya|✎ WhatsApp + Facebook: ketik keduanya|✎ Instagram + Facebook: ketik keduanya|✎ WhatsApp + Instagram + Facebook: ketik semuanya|✎ Dua nomor WhatsApp: ketik keduanya|✎ Alamat kantor: ketik alamat sendiri|∅ Tanpa kontak",
+QR:"Gunakan QR terlampir|QR WhatsApp terlampir|QR Instagram terlampir|QR Facebook terlampir|QR website terlampir|QR formulir pendaftaran terlampir|QR katalog atau brosur terlampir|QR grup komunitas terlampir|QR lokasi terlampir|∅ Tanpa QR",
+CATATAN:"Gunakan bahasa Indonesia sederhana|Tulisan besar dan mudah dibaca di HP|Jangan terlalu ramai|Tonjolkan judul dan visual utama|Suasana hangat dan terpercaya|Hindari klaim berlebihan|Gunakan tulisan Jepang secukupnya|Beri ruang kosong yang cukup|Wajah orang harus jelas dan natural|∅ Tanpa catatan",
+GAMBAR:"Gambar 1 = reference style|Gambar 1 = asset foto utama|Gambar 1 = logo|Gambar 1 = QR|Gambar 1 = reference, gambar 2 = asset|Gambar 1 = reference, gambar 2 = logo|Gambar 1 = asset, gambar 2 = logo|Gambar 1 = asset, gambar 2 = logo, gambar 3 = QR|Gambar 1 = reference, gambar 2 = asset, gambar 3 = logo, gambar 4 = QR|∅ Tanpa gambar lampiran"
+};
+// Dropdown dibuat otomatis dari CD / SH; opsi Custom ditambahkan di bawah
+// KATEGORI TAMBAHAN: o = Oleh-oleh Khas Jepang, g = Custom (pilihan umum). Format sama dengan CD di atas.
+CD.DESAIN.o="Katalog Oleh-oleh|Rekomendasi Oleh-oleh|Edukasi Makanan Khas|Campaign Oleh-oleh Pulang|Paket Hampers|Panduan Belanja di Jepang|Info Kenshusei|Info Jepang Terkini|Oleh-oleh per Daerah|Brosur Daftar Produk";
+CD.JUDUL.o="Oleh-oleh Khas Jepang untuk Keluarga|Pulang dari Jepang, Bawa Apa?|Rekomendasi Oleh-oleh Khas Jepang|Camilan Khas Jepang yang Wajib Dicoba|Hampers Khas Jepang untuk Orang Tercinta|Oleh-oleh dari Tiap Daerah di Jepang|Panduan Memilih Oleh-oleh|Kenang-kenangan dari Jepang|Hadiah untuk Keluarga di Indonesia|Kabar Terkini dari Jepang";
+CD.ISI.o="Ragam produk khas Jepang pilihan|Proses cepat, transparan, dan terpercaya|Tips memilih oleh-oleh|Daftar produk yang tersedia|Cara memesan langkah demi langkah|Hal yang perlu dicek sebelum membawa pulang|Cerita dan asal-usul tiap produk|Pertanyaan yang sering muncul|Pilihan oleh-oleh untuk berbagai kebutuhan|Info terbaru seputar Jepang";
+CD.VISUAL.o="Aneka camilan dan manisan khas Jepang|Kotak hampers khas Jepang|Teh hijau dan cangkir keramik|Suvenir kerajinan khas Jepang|Pemagang membawa koper oleh-oleh|Keluarga membuka paket oleh-oleh|Rak toko oleh-oleh Jepang|Peta Jepang dengan ikon produk daerah|Kipas lipat dan kerajinan tradisional|Karakter ilustrasi pemagang membawa hadiah";
+CD.ORNAMEN.o="Sakura dan elemen Jepang modern|Pola seigaiha|Pita dan kotak hadiah|Lingkaran matahari Jepang|Daun maple|Pola asanoha|Lampion Jepang|Gradasi halus dan glow|Ikon camilan dan teh|Minimal, tanpa ornamen berlebih";
+CD.CTA.o="Pesan Sekarang|Hubungi Sekarang|Tanya via WhatsApp|Lihat Katalog|Scan QR|Pelajari Selengkapnya|Simpan Postingan Ini|Bagikan ke Teman|Cek Produk Tersedia|∅ Tanpa CTA";
+CD.DESAIN.g="Promo layanan|Edukasi|Info penting|Campaign|Pengumuman|Infografis|FAQ|Katalog produk|Ucapan|Brosur profil";
+CD.JUDUL.g="✎ Judul pertanyaan: ketik sendiri|✎ Judul ajakan: ketik sendiri|✎ Judul informasi: ketik sendiri|✎ Judul pengumuman: ketik sendiri|✎ Judul manfaat: ketik sendiri|✎ Judul tips: ketik sendiri|✎ Judul panduan: ketik sendiri|✎ Judul edukasi: ketik sendiri|✎ Judul promosi: ketik sendiri|✎ Judul sapaan: ketik sendiri";
+CD.ISI.g="Penjelasan singkat dan mudah dipahami|Proses cepat, transparan, dan terpercaya|Langkah-langkah yang perlu disiapkan|Daftar keunggulan utama|Pertanyaan yang sering muncul|Ringkasan poin penting|Informasi yang perlu diketahui|Cara menghubungi atau mendaftar|Manfaat bagi pembaca|Info terbaru seputar topik";
+CD.VISUAL.g="Foto produk utama|Foto orang utama|Ilustrasi karakter|Ikon dan infografis|Pemandangan kota Jepang|Dokumen dan checklist|Gedung atau kantor|Smartphone dan ikon|Tipografi saja tanpa foto|Kolase foto";
+CD.ORNAMEN.g="Sakura dan elemen Jepang modern|Garis geometris|Pola seigaiha|Lingkaran matahari Jepang|Gradasi halus dan glow|Bentuk abstrak|Pola titik|Ikon pendukung|Tekstur halus|Minimal, tanpa ornamen berlebih";
+CD.CTA.g="Hubungi Sekarang|Daftar Sekarang|Pesan Sekarang|Tanya via WhatsApp|Scan QR|Pelajari Selengkapnya|Simpan Postingan Ini|Bagikan ke Teman|Cek Info Lengkap|∅ Tanpa CTA";
+// Override khusus kategori (kategori lain memakai SH): isi hanya kunci yang berbeda
+CD.WARNA={o:"Merah + putih|Pink sakura + krem|Hijau matcha + putih|Merah maroon + emas|Biru indigo + putih|Oranye + coklat tua|Hitam + emas|Biru navy + merah|Krem + hijau tua|Ungu muda + putih"};
+CD.CATATAN={o:"Produk harus terlihat jelas dan menarik|Suasana hangat dan penuh kebahagiaan|Tulisan besar dan mudah dibaca di HP|Jangan terlalu ramai|Tonjolkan judul dan visual utama|Hindari klaim berlebihan|Jangan mengarang harga atau promo|Gunakan tulisan Jepang secukupnya|Beri ruang kosong yang cukup|∅ Tanpa catatan"};
+var DK=KEYS.filter(function(k){return k!=="FORMAT"});
+DK.forEach(function(k){var el=$(k),d=document.createElement("select");d.id="sel_"+k;d.className="dd";d.setAttribute("aria-label","Pilihan "+k);el.parentNode.insertBefore(d,el);d.onchange=function(){pick(k)}});
+function fillSel(){var c=$("CAT").value;DK.forEach(function(k){var d=$("sel_"+k),a=(CD[k]&&CD[k][c]?CD[k][c]:SH[k]).split("|");d.innerHTML="";
+ function add(t,v){var o=document.createElement("option");o.textContent=t;o.value=v;d.appendChild(o)}
+ add("Pilih "+k+" (ada 10 contoh)","");a.forEach(function(t){add(t,t)});add("Custom (isi sendiri)","__c")})}
+function pick(k){var v=$("sel_"+k).value,el=$(k);if(!v)return;
+ if(v==="__c"){el.value="";el.placeholder="Tulis sendiri...";el.focus()}
+ else if(v.charAt(0)==="∅"){el.value="";toast(k+" dikosongkan")}
+ else if(v.charAt(0)==="✎"){el.value="";el.placeholder=v.slice(2);el.focus()}
+ else el.value=v}
+function resetSel(){DK.forEach(function(k){$("sel_"+k).selectedIndex=0})}
+var _f=fill;fill=function(d){_f(d);resetSel()};
+$("CAT").onchange=function(){var g=$("CAT").value==="g";$("CATN").style.display=g?"block":"none";if(g)$("CATN").focus();fillSel();toast("Pilihan disesuaikan: "+$("CAT").options[$("CAT").selectedIndex].text)};
+fillSel();
+load();render();
+</script>
+</body>
+</html>
