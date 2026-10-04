@@ -65,6 +65,18 @@ button:active{transform:scale(.97)}
 .empty{color:var(--mut);font-size:.8rem}
 .dd{margin-bottom:6px}.cat{margin:4px 0 14px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--fld)}
 .cat label{color:var(--txt)}
+.lg-ov{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));background:rgba(5,8,25,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.lg-ov.on{display:flex}
+.lg-box{width:100%;max-width:720px;max-height:88vh;overflow:auto;background:var(--glass);border:1px solid var(--line);border-radius:22px;padding:18px;backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.lg-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.lg-top h2{margin:0}
+.lg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.lg-item{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:16px;padding:10px;background:var(--fld)}
+.lg-img{height:110px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:10px;overflow:hidden;color:#555;font-size:.75rem;text-align:center}
+.lg-img img{max-width:100%;max-height:100%;object-fit:contain}
+.lg-item b{font-size:.85rem}
+.lg-item button{width:100%;padding:8px}
+.hint{color:var(--mut);font-size:.78rem;margin:-4px 0 12px}
 </style>
 </head>
 <body>
@@ -72,7 +84,7 @@ button:active{transform:scale(.97)}
 <div class="wrap">
 <header>
 <div><h1>PromptGen</h1><p>Bantu teman teman EXATA group bikin gambar dari AI.</p></div>
-<button id="theme" aria-label="Ganti tema">Tema</button>
+<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button id="logos" aria-label="Buka aset logo">Aset Logo</button><button id="theme" aria-label="Ganti tema">Tema</button></div>
 </header>
 <div class="grid">
 <section class="card">
@@ -83,16 +95,17 @@ button:active{transform:scale(.97)}
 <div class="cat"><label for="CAT">KATEGORI DIVISI</label><select id="CAT"><option value="n">EXATA Indonesia - Nenkin &amp; Gensen</option><option value="s">JP SMART - Kartu SIM Jepang</option><option value="r">J-Expert - Rekrutmen Eks Pemagang</option><option value="t">JLCT - Tes Bahasa Jepang &amp; Sertifikasi</option><option value="o">Yanoshi - Oleh-oleh Khas Jepang</option><option value="g">Custom (isi sendiri)</option></select>
 <input id="CATN" placeholder="Tulis nama kategori / topik sendiri" style="display:none;margin-top:8px"></div>
 <h2 style="margin-top:18px">Di isi dulu ya kolom kolom dibawah</h2>
+<p class="hint">Kolom yang dikosongkan otomatis ditulis "disesuaikan oleh AI" saat Generate prompt.</p>
 <!-- EDIT 5: kolom parameter. id kolom harus sama dengan isi variabel KEYS -->
 <div class="f">
-<div><label for="DESAIN">Mau bikin gambar tentang apa?</label><input id="DESAIN" placeholder="Promo layanan"></div>
+<div><label for="DESAIN">Mau bikin gambar tentang apa?</label><input id="DESAIN" placeholder="Atau isi sendiri disini"></div>
 <div><label for="FORMAT">Buat di tampilin dimana?</label><select id="FORMAT"><option>Story</option><option>Feed</option><option>Feed Square</option><option>Poster</option><option>Brosur</option><option>Banner</option><option>Banner Vertical</option><option>Bendera</option><option>Custom</option></select></div>
-<div class="full"><label for="JUDUL">Judul utamanya?</label><input id="JUDUL" placeholder="Urus Nenkin Lebih Mudah"></div>
-<div class="full"><label for="ISI">Isian tulisannya mau ada tulisan tentang apa?</label><textarea id="ISI" placeholder="Proses cepat, transparan, dan terpercaya"></textarea></div>
-<div><label for="VISUAL">Gambar utama (gede)nya kira kira mau apa?</label><input id="VISUAL" placeholder="Pekerja Indonesia di Jepang"></div>
-<div><label for="ORNAMEN">Mau dikasih ornamen atau yang lainnya juga?</label><input id="ORNAMEN" placeholder="Sakura dan elemen Jepang modern"></div>
-<div><label for="WARNA">Di gambarnya, mau dominan warna apa?</label><input id="WARNA" placeholder="Biru navy + merah"></div>
-<div><label for="STYLE">Gaya desainnya kaya apa?</label><input id="STYLE" placeholder="Modern clean corporate"></div>
+<div class="full"><label for="JUDUL">Judul utamanya?</label><input id="JUDUL" placeholder="Atau isi sendiri disini"></div>
+<div class="full"><label for="ISI">Isian tulisannya mau ada tulisan tentang apa?</label><textarea id="ISI" placeholder="Atau isi sendiri disini"></textarea></div>
+<div><label for="VISUAL">Gambar utama (gede)nya kira kira mau apa?</label><input id="VISUAL" placeholder="Atau isi sendiri disini"></div>
+<div><label for="ORNAMEN">Mau dikasih ornamen atau yang lainnya juga?</label><input id="ORNAMEN" placeholder="Atau isi sendiri disini"></div>
+<div><label for="WARNA">Di gambarnya, mau dominan warna apa?</label><input id="WARNA" placeholder="Atau isi sendiri disini"></div>
+<div><label for="STYLE">Gaya desainnya kaya apa?</label><input id="STYLE" placeholder="Atau isi sendiri disini"></div>
 <div><label for="KONTAK">Pakai kontak person apa aja? (gak wajib)</label><input id="KONTAK" placeholder="081234567890"></div>
 <div><label for="QR">ada QR juga? (gak wajib)</label><input id="QR" placeholder="Gunakan QR terlampir"></div>
 <div><label for="CTA">CTAnya mau gimana? (gak wajib)</label><input id="CTA" placeholder="Hubungi Sekarang"></div>
@@ -106,6 +119,12 @@ button:active{transform:scale(.97)}
 <textarea id="out" placeholder="Hasil prompt muncul di sini. Kamu bisa mengeditnya langsung."></textarea>
 <div class="act"><button class="pri" id="cp">Salin prompt</button><button id="cl">Kosongkan</button></div>
 </section>
+</div>
+</div>
+<div class="lg-ov" id="lgov" role="dialog" aria-modal="true" aria-labelledby="lgt">
+<div class="lg-box">
+<div class="lg-top"><h2 id="lgt">Aset Logo</h2><button id="lgx" aria-label="Tutup">Tutup</button></div>
+<div class="lg-grid" id="lgg"></div>
 </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -651,11 +670,17 @@ var $=function(i){return document.getElementById(i)};
 function val(k){return $(k).value.trim()}
 function toast(m){var t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(function(){t.classList.remove("on")},1800)}
 function count(){$("cnt").textContent=$("out").value.length.toLocaleString("id-ID")+" karakter"}
+// EDIT: teks pengganti untuk kolom kosong, dan kolom yang TIDAK boleh diisi AI
+// (KONTAK dan QR tetap "(kosong)" agar AI tidak mengarang nomor/QR)
+var AUTO="disesuaikan oleh AI",NOAUTO=["KONTAK","QR"];
+function fv(k){var v=val(k);if(v)return v;if($(k).dataset.none==="1"||NOAUTO.indexOf(k)>-1)return"(kosong)";return AUTO}
 // Menempelkan semua parameter ke template lalu menghasilkan prompt
 function build(){
  var s="# INPUT USER\n\n";
  if($("CAT").value==="g"&&$("CATN").value.trim())s+="TOPIK KONTEN = "+$("CATN").value.trim()+"\n";
- KEYS.slice(0,12).forEach(function(k){s+=k+" = "+(val(k)||"(kosong)")+"\n"});
+ var auto=false;
+ KEYS.slice(0,12).forEach(function(k){var v=fv(k);if(v===AUTO)auto=true;s+=k+" = "+v+"\n"});
+ if(auto)s+="\nCatatan: kolom bertuliskan \""+AUTO+"\" diperlakukan seperti kolom kosong (ikuti SMART DEFAULT SYSTEM).\n";
  if(val("GAMBAR"))s+="\n# CATATAN GAMBAR LAMPIRAN\n\n"+val("GAMBAR")+"\n";
  return HEAD+s.trim()+TAIL;
 }
@@ -745,15 +770,44 @@ DK.forEach(function(k){var el=$(k),d=document.createElement("select");d.id="sel_
 function fillSel(){var c=$("CAT").value;DK.forEach(function(k){var d=$("sel_"+k),a=(CD[k]&&CD[k][c]?CD[k][c]:SH[k]).split("|");d.innerHTML="";
  function add(t,v){var o=document.createElement("option");o.textContent=t;o.value=v;d.appendChild(o)}
  add("Pilih "+k+" (ada 10 contoh)","");a.forEach(function(t){add(t,t)});add("Custom (isi sendiri)","__c")})}
-function pick(k){var v=$("sel_"+k).value,el=$(k);if(!v)return;
+function pick(k){var v=$("sel_"+k).value,el=$(k);if(!v)return;delete el.dataset.none;
  if(v==="__c"){el.value="";el.placeholder="Tulis sendiri...";el.focus()}
- else if(v.charAt(0)==="∅"){el.value="";toast(k+" dikosongkan")}
+ else if(v.charAt(0)==="∅"){el.value="";el.dataset.none="1";toast(k+" dikosongkan")}
  else if(v.charAt(0)==="✎"){el.value="";el.placeholder=v.slice(2);el.focus()}
  else el.value=v}
-function resetSel(){DK.forEach(function(k){$("sel_"+k).selectedIndex=0})}
+function resetSel(){DK.forEach(function(k){$("sel_"+k).selectedIndex=0;delete $(k).dataset.none})}
 var _f=fill;fill=function(d){_f(d);resetSel()};
 $("CAT").onchange=function(){var g=$("CAT").value==="g";$("CATN").style.display=g?"block":"none";if(g)$("CATN").focus();fillSel();toast("Pilihan disesuaikan: "+$("CAT").options[$("CAT").selectedIndex].text)};
 fillSel();
+// EDIT: daftar logo (n = nama tampil, u = alamat gambar). Tambah baris baru untuk logo lain.
+var LOGOS=[
+ {n:"Exata",u:"https://marketingexata.github.io/promptgen/exata.png"},
+ {n:"JP Smart",u:"https://marketingexata.github.io/promptgen/jpsmart.png"},
+ {n:"JLCT",u:"https://marketingexata.github.io/promptgen/jlct.png"},
+ {n:"J-Expert",u:"https://marketingexata.github.io/promptgen/jexpert.jpg"},
+ {n:"Yanoshi",u:"https://marketingexata.github.io/promptgen/yanoshi.jpg"}
+];
+function dlLogo(l){var f=l.u.split("/").pop();
+ fetch(l.u).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(b){
+  var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=f;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(a.href)},1500);toast("Logo "+l.n+" diunduh")
+ }).catch(function(){window.open(l.u,"_blank");toast("Dibuka di tab baru, simpan manual dari sana")})}
+(function(){var g=$("lgg");
+ LOGOS.forEach(function(l){var d=document.createElement("div");d.className="lg-item";
+  var w=document.createElement("div");w.className="lg-img";
+  var im=document.createElement("img");im.loading="lazy";im.alt="Logo "+l.n;im.src=l.u;
+  im.onerror=function(){w.textContent="Gambar gagal dimuat"};w.appendChild(im);
+  var t=document.createElement("b");t.textContent=l.n;
+  var b=document.createElement("button");b.textContent="Download";b.onclick=function(){dlLogo(l)};
+  d.appendChild(w);d.appendChild(t);d.appendChild(b);g.appendChild(d)});
+ function open(){$("lgov").classList.add("on");document.body.style.overflow="hidden"}
+ function close(){$("lgov").classList.remove("on");document.body.style.overflow=""}
+ $("logos").onclick=open;$("lgx").onclick=close;
+ $("lgov").onclick=function(e){if(e.target===this)close()};
+ document.addEventListener("keydown",function(e){if(e.key==="Escape")close()});
+})();
+// Pilihan "Tanpa ..." (∅) hilang statusnya jika user mengetik sendiri
+DK.forEach(function(k){$(k).addEventListener("input",function(){delete this.dataset.none})});
 load();render();
 </script>
 </body>
